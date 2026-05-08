@@ -194,6 +194,57 @@ input.letter-cell-active:focus {
   box-shadow: 0 0 0 3px color-mix(in srgb, var(--gold) 30%, transparent);
 }
 
+.letter-cell-pending {
+  background: #fff3cd;
+  border-color: #e6a817;
+  color: #7a5200;
+}
+
+.letter-cell-cursor {
+  background: transparent;
+  border-style: dashed;
+  color: #bbb;
+  font-weight: 400;
+}
+
+.letter-cell-recording {
+  border-color: var(--red, #c0392b);
+  color: var(--red, #c0392b);
+  animation: pulse 0.8s ease-in-out infinite alternate;
+}
+
+@keyframes pulse {
+  from { opacity: 1; }
+  to   { opacity: 0.3; }
+}
+
+.spell-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  justify-content: center;
+  align-items: center;
+  margin: 1rem 0;
+}
+
+.spell-back-btn {
+  background: none;
+  border: 1px solid var(--gold);
+  color: var(--gold-dark);
+}
+
+.spell-back-btn:hover {
+  background: var(--gold-light);
+}
+
+.done-btn {
+  background: #2e7d32;
+}
+
+.done-btn:hover {
+  background: #1b5e20;
+}
+
 form {
   display: flex;
   gap: 0.5rem;

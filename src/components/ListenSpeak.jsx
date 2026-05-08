@@ -10,11 +10,13 @@ export default function ListenSpeak({ words, player, stage, mode, onChangeMode, 
   const [progressMap, setProgressMap] = useState(new Map());
   const [currentWord, setCurrentWord] = useState(null);
   const [feedback, setFeedback] = useState(null);
-  const [listening, setListening] = useState(false);
-  const [recognizedText, setRecognizedText] = useState('');
-  const [error, setError] = useState('');
   const [completed, setCompleted] = useState(false);
   const [loadingProgress, setLoadingProgress] = useState(true);
+
+  const [confirmedLetters, setConfirmedLetters] = useState([]);
+  const [pendingLetter, setPendingLetter] = useState(null);
+  const [isRecording, setIsRecording] = useState(false);
+  const [error, setError] = useState('');
 
   const wordRef = useRef(null);
   const poolRef = useRef([]);
@@ -49,29 +51,23 @@ export default function ListenSpeak({ words, player, stage, mode, onChangeMode, 
 
   const handleRecord = () => {
     setError('');
-    setRecognizedText('');
+    setPendingLetter(null);
 
     const recognizer = createRecognizer(
-      async (results) => {
-        setListening(false);
-        const word = wordRef.current?.word;
-        const correct = results.some(r => r === word);
-        setRecognizedText(results[0]);
-        await recordAnswer(player.id, stage, mode, word, correct);
-        const { newPool, newProgressMap } = applyAnswer(poolRef.current, progressMapRef.current, word, correct);
-        setPool(newPool);
-        setProgressMap(newProgressMap);
-        setFeedback(correct ? 'correct' : 'incorrect');
+      (results) => {
+        setIsRecording(false);
+        const letter = results[0]?.charAt(0).toLowerCase();
+        if (letter && /[a-z]/.test(letter)) {
+          setPendingLetter(letter);
+        } else {
+          setError('Could not recognize a letter. Please try again.');
+        }
       },
       (err) => {
-        setListening(false);
-        if (err === 'not-allowed') {
-          setError('Microphone access denied. Please allow microphone permissions.');
-        } else if (err === 'no-speech') {
-          setError('No speech detected. Please try again.');
-        } else {
-          setError(`Recognition error: ${err}`);
-        }
+        setIsRecording(false);
+        if (err === 'not-allowed') setError('Microphone access denied.');
+        else if (err === 'no-speech') setError('No speech detected. Please try again.');
+        else setError(`Recognition error: ${err}`);
       }
     );
 
@@ -81,29 +77,54 @@ export default function ListenSpeak({ words, player, stage, mode, onChangeMode, 
     }
 
     recognizerRef.current = recognizer;
-    setListening(true);
+    setIsRecording(true);
     recognizer.start();
   };
 
   const handleStop = () => {
-    if (recognizerRef.current) {
-      recognizerRef.current.stop();
-      setListening(false);
+    recognizerRef.current?.stop();
+    setIsRecording(false);
+  };
+
+  // Confirm pending letter and move to next position
+  const handleNext = () => {
+    if (!pendingLetter) return;
+    setConfirmedLetters(prev => [...prev, pendingLetter]);
+    setPendingLetter(null);
+  };
+
+  // Discard pending → retry current position; or undo last confirmed
+  const handleBack = () => {
+    if (pendingLetter) {
+      setPendingLetter(null);
+    } else {
+      setConfirmedLetters(prev => prev.slice(0, -1));
     }
   };
 
+  const handleDone = async () => {
+    const allLetters = [...confirmedLetters, ...(pendingLetter ? [pendingLetter] : [])];
+    if (!allLetters.length) return;
+    const typed = allLetters.join('');
+    const word = wordRef.current?.word;
+    const correct = typed === word;
+    await recordAnswer(player.id, stage, mode, word, correct);
+    const { newPool, newProgressMap } = applyAnswer(poolRef.current, progressMapRef.current, word, correct);
+    setPool(newPool);
+    setProgressMap(newProgressMap);
+    setFeedback(correct ? 'correct' : 'incorrect');
+  };
+
   const nextWord = () => {
-    if (poolRef.current.length === 0) {
-      setCompleted(true);
-      return;
-    }
+    if (poolRef.current.length === 0) { setCompleted(true); return; }
     const entry = pickFromPool(poolRef.current);
     wordRef.current = entry;
     setCurrentWord(entry);
     setFeedback(null);
-    setRecognizedText('');
+    setConfirmedLetters([]);
+    setPendingLetter(null);
+    setIsRecording(false);
     setError('');
-    setListening(false);
     speak(entry.word);
   };
 
@@ -121,28 +142,58 @@ export default function ListenSpeak({ words, player, stage, mode, onChangeMode, 
   }
 
   const { mastered, total } = countMastered(words, progressMap);
+  const phase = isRecording ? 'recording' : pendingLetter ? 'pending' : 'ready';
+  const hasLetters = confirmedLetters.length > 0 || pendingLetter;
 
   return (
     <div className="game-area">
-      <h2>Listen & Speak</h2>
+      <h2>Listen &amp; Speak</h2>
       <p className="progress-counter">Words mastered: {mastered}/{total}</p>
-      <p className="instruction">Listen to the word and say it back.</p>
+      <p className="instruction">Spell the word letter by letter.</p>
       <button className="btn replay-btn" onClick={handleReplay}>Replay</button>
       {currentWord?.sentence && (
         <button className="btn example-btn" onClick={handleExample}>Hear Example</button>
       )}
+
       {!feedback && (
-        <div className="record-area">
-          {!listening ? (
-            <button className="btn record-btn" onClick={handleRecord}>Record</button>
-          ) : (
-            <button className="btn stop-btn" onClick={handleStop}>Stop</button>
-          )}
-          {listening && <p className="listening-indicator">Listening...</p>}
-        </div>
+        <>
+          <div className="letter-input">
+            {confirmedLetters.map((ch, i) => (
+              <span key={i} className="letter-cell">{ch}</span>
+            ))}
+            {pendingLetter
+              ? <span className="letter-cell letter-cell-pending">{pendingLetter}</span>
+              : <span className={`letter-cell letter-cell-cursor${isRecording ? ' letter-cell-recording' : ''}`}>
+                  {isRecording ? '…' : '_'}
+                </span>
+            }
+          </div>
+
+          <div className="spell-controls">
+            {phase === 'recording' && (
+              <>
+                <button className="btn stop-btn" onClick={handleStop}>Stop</button>
+                <span className="listening-indicator">Listening…</span>
+              </>
+            )}
+            {phase !== 'recording' && (
+              <button className="btn record-btn" onClick={handleRecord}>Record</button>
+            )}
+            {phase === 'pending' && (
+              <button className="btn" onClick={handleNext}>Next</button>
+            )}
+            {hasLetters && phase !== 'recording' && (
+              <button className="btn spell-back-btn" onClick={handleBack}>Back</button>
+            )}
+            {hasLetters && phase !== 'recording' && (
+              <button className="btn done-btn" onClick={handleDone}>Done</button>
+            )}
+          </div>
+
+          {error && <p className="error-text">{error}</p>}
+        </>
       )}
-      {recognizedText && <p className="recognized">You said: &quot;{recognizedText}&quot;</p>}
-      {error && <p className="error-text">{error}</p>}
+
       <Feedback feedback={feedback} correctWord={currentWord?.word} onNext={nextWord} />
     </div>
   );
