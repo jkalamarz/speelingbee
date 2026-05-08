@@ -22,6 +22,8 @@ export default function ListenSpeak({ words, player, stage, mode, onChangeMode, 
   const poolRef = useRef([]);
   const progressMapRef = useRef(new Map());
   const recognizerRef = useRef(null);
+  const autoAdvanceRef = useRef(false);  // set by Next-while-recording
+  const startRecordingRef = useRef(null); // allows callback to restart recording
 
   useEffect(() => {
     fetchProgress(player.id, stage, mode).then(({ progress }) => {
@@ -46,10 +48,8 @@ export default function ListenSpeak({ words, player, stage, mode, onChangeMode, 
   useEffect(() => { poolRef.current = pool; }, [pool]);
   useEffect(() => { progressMapRef.current = progressMap; }, [progressMap]);
 
-  const handleReplay = () => currentWord && speak(currentWord.word);
-  const handleExample = () => currentWord?.sentence && speak(currentWord.sentence);
-
-  const handleRecord = () => {
+  // Reassigned every render so callbacks always see the latest version via ref
+  startRecordingRef.current = () => {
     setError('');
     setPendingLetter(null);
 
@@ -58,13 +58,21 @@ export default function ListenSpeak({ words, player, stage, mode, onChangeMode, 
         setIsRecording(false);
         const letter = results[0]?.charAt(0).toLowerCase();
         if (letter && /[a-z]/.test(letter)) {
-          setPendingLetter(letter);
+          if (autoAdvanceRef.current) {
+            autoAdvanceRef.current = false;
+            setConfirmedLetters(prev => [...prev, letter]);
+            setTimeout(() => startRecordingRef.current?.(), 50);
+          } else {
+            setPendingLetter(letter);
+          }
         } else {
+          autoAdvanceRef.current = false;
           setError('Could not recognize a letter. Please try again.');
         }
       },
       (err) => {
         setIsRecording(false);
+        autoAdvanceRef.current = false;
         if (err === 'not-allowed') setError('Microphone access denied.');
         else if (err === 'no-speech') setError('No speech detected. Please try again.');
         else setError(`Recognition error: ${err}`);
@@ -81,19 +89,29 @@ export default function ListenSpeak({ words, player, stage, mode, onChangeMode, 
     recognizer.start();
   };
 
+  const handleReplay = () => currentWord && speak(currentWord.word);
+  const handleExample = () => currentWord?.sentence && speak(currentWord.sentence);
+  const handleRecord = () => startRecordingRef.current?.();
+
   const handleStop = () => {
+    autoAdvanceRef.current = false;
     recognizerRef.current?.stop();
     setIsRecording(false);
   };
 
-  // Confirm pending letter and move to next position
+  // Next while recording: stop + auto-confirm + restart
+  const handleNextWhileRecording = () => {
+    autoAdvanceRef.current = true;
+    recognizerRef.current?.stop();
+  };
+
+  // Next in pending state: confirm letter, wait for next Record click
   const handleNext = () => {
     if (!pendingLetter) return;
     setConfirmedLetters(prev => [...prev, pendingLetter]);
     setPendingLetter(null);
   };
 
-  // Discard pending → retry current position; or undo last confirmed
   const handleBack = () => {
     if (pendingLetter) {
       setPendingLetter(null);
@@ -124,6 +142,7 @@ export default function ListenSpeak({ words, player, stage, mode, onChangeMode, 
     setConfirmedLetters([]);
     setPendingLetter(null);
     setIsRecording(false);
+    autoAdvanceRef.current = false;
     setError('');
     speak(entry.word);
   };
@@ -173,6 +192,7 @@ export default function ListenSpeak({ words, player, stage, mode, onChangeMode, 
             {phase === 'recording' && (
               <>
                 <button className="btn stop-btn" onClick={handleStop}>Stop</button>
+                <button className="btn" onClick={handleNextWhileRecording}>Next</button>
                 <span className="listening-indicator">Listening…</span>
               </>
             )}
