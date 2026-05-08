@@ -1,11 +1,13 @@
-import { useState, useEffect } from 'react';
-import { loadWords } from './utils/words';
+import { useState, useEffect, useMemo } from 'react';
+import { loadWords, filterWordsByStage } from './utils/words';
+import StageSelector from './components/StageSelector';
 import ModeSelector from './components/ModeSelector';
 import FixSpelling from './components/FixSpelling';
 import ListenType from './components/ListenType';
 import ListenSpeak from './components/ListenSpeak';
 
 export default function App() {
+  const [stage, setStage] = useState(null);
   const [mode, setMode] = useState(null);
   const [words, setWords] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -17,6 +19,19 @@ export default function App() {
       .catch(() => setError('Failed to load word list.'))
       .finally(() => setLoading(false));
   }, []);
+
+  const stageWords = useMemo(
+    () => (stage ? filterWordsByStage(words, stage) : []),
+    [words, stage]
+  );
+
+  const goBack = () => {
+    if (mode) {
+      setMode(null);
+    } else {
+      setStage(null);
+    }
+  };
 
   if (loading) {
     return <div className="container"><p>Loading...</p></div>;
@@ -30,17 +45,18 @@ export default function App() {
     <div className="container">
       <header>
         <h1>Speeling Bee</h1>
-        {mode && (
-          <button className="btn back-btn" onClick={() => setMode(null)}>
-            Back to Menu
+        {stage && (
+          <button className="btn back-btn" onClick={goBack}>
+            {mode ? 'Back to Menu' : 'Back to Stages'}
           </button>
         )}
       </header>
       <main>
-        {!mode && <ModeSelector onSelectMode={setMode} />}
-        {mode === 'fix' && <FixSpelling words={words} />}
-        {mode === 'listen-type' && <ListenType words={words} />}
-        {mode === 'listen-speak' && <ListenSpeak words={words} />}
+        {!stage && <StageSelector onSelectStage={setStage} />}
+        {stage && !mode && <ModeSelector onSelectMode={setMode} />}
+        {mode === 'fix' && <FixSpelling words={stageWords} />}
+        {mode === 'listen-type' && <ListenType words={stageWords} />}
+        {mode === 'listen-speak' && <ListenSpeak words={stageWords} />}
       </main>
     </div>
   );

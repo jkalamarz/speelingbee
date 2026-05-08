@@ -5,11 +5,16 @@ export async function loadWords() {
   return rows
     .map(line => {
       const cols = line.split('\t');
+      const stage = cols[0]?.trim();
       const word = cols[1]?.trim().toLowerCase();
       const sentence = cols[4]?.trim() || '';
-      return word ? { word, sentence } : null;
+      return word ? { word, sentence, stage } : null;
     })
     .filter(Boolean);
+}
+
+export function filterWordsByStage(words, stage) {
+  return words.filter(w => w.stage === stage);
 }
 
 export function getRandomWord(words) {
