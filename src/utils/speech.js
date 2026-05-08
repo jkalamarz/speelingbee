@@ -4,7 +4,8 @@ export function speak(word, onEnd) {
   utterance.lang = 'en-US';
   if (onEnd) utterance.onend = onEnd;
   window.speechSynthesis.cancel();
-  window.speechSynthesis.speak(utterance);
+  // Chrome bug: speak() after cancel() silently fails without a brief delay
+  setTimeout(() => window.speechSynthesis.speak(utterance), 50);
 }
 
 export function createRecognizer(onResult, onError) {

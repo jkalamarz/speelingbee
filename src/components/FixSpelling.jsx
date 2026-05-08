@@ -4,7 +4,7 @@ import { generateMisspelling } from '../utils/misspell';
 import Feedback from './Feedback';
 
 function pickWord(words) {
-  const word = getRandomWord(words);
+  const { word } = getRandomWord(words);
   return { word, misspelled: generateMisspelling(word) };
 }
 

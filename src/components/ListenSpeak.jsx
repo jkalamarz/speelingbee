@@ -13,22 +13,26 @@ export default function ListenSpeak({ words }) {
   const wordRef = useRef(currentWord);
 
   useEffect(() => {
-    speak(wordRef.current);
+    speak(wordRef.current.word);
   }, []);
 
   const nextWord = () => {
-    const word = getRandomWord(words);
-    setCurrentWord(word);
-    wordRef.current = word;
+    const entry = getRandomWord(words);
+    setCurrentWord(entry);
+    wordRef.current = entry;
     setFeedback(null);
     setRecognizedText('');
     setError('');
     setListening(false);
-    speak(word);
+    speak(entry.word);
   };
 
   const handleReplay = () => {
-    speak(currentWord);
+    speak(currentWord.word);
+  };
+
+  const handleExample = () => {
+    speak(currentWord.sentence);
   };
 
   const handleRecord = () => {
@@ -38,7 +42,7 @@ export default function ListenSpeak({ words }) {
     const recognizer = createRecognizer(
       (results) => {
         setListening(false);
-        const matched = results.some(r => r === currentWord);
+        const matched = results.some(r => r === currentWord.word);
         setRecognizedText(results[0]);
         setFeedback(matched ? 'correct' : 'incorrect');
       },
@@ -78,6 +82,11 @@ export default function ListenSpeak({ words }) {
       <button className="btn replay-btn" onClick={handleReplay}>
         Replay
       </button>
+      {currentWord.sentence && (
+        <button className="btn example-btn" onClick={handleExample}>
+          Hear Example
+        </button>
+      )}
       {!feedback && (
         <div className="record-area">
           {!listening ? (
@@ -96,7 +105,7 @@ export default function ListenSpeak({ words }) {
         <p className="recognized">You said: &quot;{recognizedText}&quot;</p>
       )}
       {error && <p className="error-text">{error}</p>}
-      <Feedback feedback={feedback} correctWord={currentWord} onNext={nextWord} />
+      <Feedback feedback={feedback} correctWord={currentWord.word} onNext={nextWord} />
     </div>
   );
 }

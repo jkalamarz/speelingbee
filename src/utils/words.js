@@ -1,9 +1,14 @@
 export async function loadWords() {
-  const res = await fetch('/words.txt');
+  const res = await fetch('/spelling_bee_words.tsv');
   const text = await res.text();
-  return text
-    .split('\n')
-    .map(w => w.trim().toLowerCase())
+  const [, ...rows] = text.split('\n');
+  return rows
+    .map(line => {
+      const cols = line.split('\t');
+      const word = cols[1]?.trim().toLowerCase();
+      const sentence = cols[4]?.trim() || '';
+      return word ? { word, sentence } : null;
+    })
     .filter(Boolean);
 }
 

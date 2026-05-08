@@ -10,26 +10,30 @@ export default function ListenType({ words }) {
   const wordRef = useRef(currentWord);
 
   useEffect(() => {
-    speak(wordRef.current);
+    speak(wordRef.current.word);
   }, []);
 
   const nextWord = () => {
-    const word = getRandomWord(words);
-    setCurrentWord(word);
-    wordRef.current = word;
+    const entry = getRandomWord(words);
+    setCurrentWord(entry);
+    wordRef.current = entry;
     setUserInput('');
     setFeedback(null);
-    speak(word);
+    speak(entry.word);
   };
 
   const handleReplay = () => {
-    speak(currentWord);
+    speak(currentWord.word);
+  };
+
+  const handleExample = () => {
+    speak(currentWord.sentence);
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!userInput.trim()) return;
-    if (userInput.trim().toLowerCase() === currentWord) {
+    if (userInput.trim().toLowerCase() === currentWord.word) {
       setFeedback('correct');
     } else {
       setFeedback('incorrect');
@@ -43,6 +47,11 @@ export default function ListenType({ words }) {
       <button className="btn replay-btn" onClick={handleReplay}>
         Replay
       </button>
+      {currentWord.sentence && (
+        <button className="btn example-btn" onClick={handleExample}>
+          Hear Example
+        </button>
+      )}
       {!feedback && (
         <form onSubmit={handleSubmit}>
           <input
@@ -55,7 +64,7 @@ export default function ListenType({ words }) {
           <button className="btn" type="submit">Check</button>
         </form>
       )}
-      <Feedback feedback={feedback} correctWord={currentWord} onNext={nextWord} />
+      <Feedback feedback={feedback} correctWord={currentWord.word} onNext={nextWord} />
     </div>
   );
 }
