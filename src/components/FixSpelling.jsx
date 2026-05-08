@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { generateMisspelling } from '../utils/misspell';
+import { speak } from '../utils/speech';
 import { fetchProgress, recordAnswer } from '../utils/api';
 import { buildPool, countMastered, pickFromPool, applyAnswer } from '../utils/session';
 import Feedback from './Feedback';
@@ -74,6 +75,11 @@ export default function FixSpelling({ words, player, stage, mode, onChangeMode, 
       <h2>Fix the Spelling</h2>
       <p className="progress-counter">Words mastered: {mastered}/{total}</p>
       <p className="misspelled-word">{wordState?.misspelled}</p>
+      {wordState?.entry.sentence && (
+        <button className="btn example-btn" onClick={() => speak(wordState.entry.sentence)}>
+          Hear Example
+        </button>
+      )}
       {!feedback && (
         <div className="input-row">
           <LetterInput value={userInput} onChange={setUserInput} onSubmit={handleSubmit} />
