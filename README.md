@@ -1,16 +1,59 @@
-# React + Vite
+# Speeling Bee
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A spelling practice web app with three game modes, player progress tracking, and a mastery-based word cycle.
 
-Currently, two official plugins are available:
+## Requirements
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- Node.js v22 or later (uses built-in `node:sqlite`)
 
-## React Compiler
+## Running
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+Two processes need to run: the backend API server and the Vite frontend.
 
-## Expanding the ESLint configuration
+**1. Install dependencies**
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+```bash
+# Frontend
+npm install
+
+# Backend
+cd server && npm install
+```
+
+**2. Start the backend** (port 3001)
+
+```bash
+cd server
+npm run dev
+```
+
+**3. Start the frontend** (port 5173)
+
+```bash
+npm run dev
+```
+
+The app is available at `http://localhost:5173/` or `http://10.1.1.2:5173/` from the local network.
+
+## Game modes
+
+| Mode | Description |
+|---|---|
+| Fix the Spelling | A misspelled word is shown — type the correct spelling |
+| Listen & Type | A word is spoken aloud — type what you hear |
+| Listen & Speak | A word is spoken aloud — say it back into the mic (Chrome/Edge only) |
+
+All modes support a **Hear Example** button that reads an example sentence aloud.
+
+## Progress tracking
+
+- Select or create a player before starting (name only, no password)
+- Choose a stage (Stage 1 or Stage 2) and a mode
+- Each word must be answered correctly **twice** to be marked as mastered
+- Progress is saved in `server/data/speelingbee.db` (SQLite) and persists across restarts
+- A completion screen is shown when all words in a stage/mode are mastered
+
+## Word list
+
+Words are loaded from `public/spelling_bee_words.tsv` — a tab-separated file with columns:
+`stage`, `word`, `pronunciation`, `meaning`, `example sentence`
