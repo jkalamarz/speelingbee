@@ -2,93 +2,111 @@
 
 ## Context
 
-Build a client-side spelling practice web app from scratch. The repo is empty. The app has three game modes: fix misspelled words, listen and type, and listen and speak into mic. Tech: React + Vite, no backend, simple practice (no scoring).
+Build a client-side spelling practice web app from scratch. The app has three game modes: fix misspelled words, listen and type, and listen and speak into mic. Tech: React + Vite, with a Node.js/Express backend for player auth and progress tracking.
 
 ## Tech Stack
 
-- React 18 + Vite 5 (JavaScript)
+- React 19 + Vite 8 (JavaScript)
 - Web Speech API: `SpeechSynthesis` (TTS) + `SpeechRecognition` (STT)
-- No external dependencies beyond React/Vite
-- Static word list served from `public/words.txt`
+- Node.js + Express backend (port 3001)
+- `node:sqlite` (built-in, Node 22+) — no native compilation required
+- Static word list served from `public/spelling_bee_words.tsv`
 
 ## Project Structure
 
 ```
-public/words.txt              — 80 commonly misspelled words
-index.html                    — Vite entry HTML
-vite.config.js                — Minimal Vite + React config
+public/
+  spelling_bee_words.tsv    — Word list: stage, word, pronunciation, meaning, example sentence
+server/
+  server.js                 — Express app (port 3001)
+  db.js                     — SQLite schema init + query functions (node:sqlite)
+  routes/
+    players.js              — GET/POST /api/players
+    progress.js             — GET/POST /api/progress/:playerId/:stage/:mode/:word
+  data/
+    speelingbee.db          — SQLite database (gitignored)
 src/
-  main.jsx                    — React bootstrap
-  App.jsx                     — Top-level state (mode, words), routing
-  App.css                     — All styles (gold/yellow bee theme)
+  main.jsx                  — React bootstrap
+  App.jsx                   — Top-level state (player, stage, mode, words)
+  App.css                   — All styles (gold/yellow bee theme)
   components/
-    ModeSelector.jsx          — Landing screen with 3 mode cards
-    FixSpelling.jsx           — Mode 1: correct a misspelled word
-    ListenType.jsx            — Mode 2: hear word, type it
-    ListenSpeak.jsx           — Mode 3: hear word, speak it
-    Feedback.jsx              — Shared correct/incorrect display
+    PlayerPicker.jsx        — First screen: create or select player
+    StageSelector.jsx       — Pick Stage 1 or Stage 2
+    ModeSelector.jsx        — Pick game mode
+    FixSpelling.jsx         — Mode 1: correct a misspelled word
+    ListenType.jsx          — Mode 2: hear word, type it
+    ListenSpeak.jsx         — Mode 3: hear word, speak it
+    Feedback.jsx            — Shared correct/incorrect display
+    CompletionScreen.jsx    — Shown when all words in a stage/mode are mastered
   utils/
-    words.js                  — fetch + parse word list, getRandomWord()
-    misspell.js               — Generate plausible misspellings
-    speech.js                 — TTS speak() and STT createRecognizer()
+    words.js                — Fetch + parse TSV word list, filter by stage
+    misspell.js             — Generate plausible misspellings
+    speech.js               — TTS speak() and STT createRecognizer()
+    api.js                  — Fetch wrappers for backend API
+    session.js              — Pool logic: buildPool, applyAnswer, countMastered, pickFromPool
 ```
 
-## Implementation Steps
+## API
 
-### 1. Scaffold project
-- `npm create vite@latest . -- --template react`
-- Remove boilerplate (logos, default CSS content, counter component)
+| Method | Path | Description |
+|--------|------|-------------|
+| GET | `/api/players` | List all players |
+| POST | `/api/players` | Create player `{ name }` |
+| GET | `/api/progress/:playerId/:stage/:mode` | Get word progress for player/stage/mode |
+| POST | `/api/progress/:playerId/:stage/:mode/:word` | Record answer `{ correct: bool }` |
 
-### 2. Create `public/words.txt`
-- ~80 commonly misspelled English words, one per line
+## Database Schema
 
-### 3. Implement utilities
+```sql
+CREATE TABLE players (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  name TEXT NOT NULL UNIQUE,
+  created_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
 
-**`src/utils/words.js`** — `loadWords()` fetches and parses the word list; `getRandomWord(words)` picks one at random.
+CREATE TABLE progress (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  player_id INTEGER NOT NULL REFERENCES players(id) ON DELETE CASCADE,
+  stage TEXT NOT NULL,
+  mode TEXT NOT NULL,
+  word TEXT NOT NULL,
+  correct_count INTEGER NOT NULL DEFAULT 0,
+  UNIQUE(player_id, stage, mode, word)
+);
+```
 
-**`src/utils/misspell.js`** — `generateMisspelling(word)` applies one random mutation:
-- Swap adjacent letters
-- Double a consonant
-- Remove one of a doubled letter pair
-- Common substitution (ei/ie, ance/ence, able/ible)
-- Delete a random letter (not first)
-- Insert a vowel near existing vowel
-- Guarantees output differs from input
+## Game Flow
 
-**`src/utils/speech.js`** — `speak(word, onEnd)` wraps SpeechSynthesis (rate 0.85, en-US); `createRecognizer(onResult, onError)` wraps SpeechRecognition with maxAlternatives=3, returns null if unsupported.
+1. **Player picker** — create or select a player (name only)
+2. **Stage selector** — Stage 1 or Stage 2
+3. **Mode selector** — Fix the Spelling / Listen & Type / Listen & Speak
+4. **Game** — words cycle from a pool of unmastered words
+   - A word is mastered after 2 correct answers
+   - Incorrect answers keep the word in the pool
+   - Progress counter shows "Words mastered: N/total"
+5. **Completion screen** — shown when all words are mastered; offers back to mode/stage
 
-### 4. Build components
+## Mastery Logic (`src/utils/session.js`)
 
-**`App.jsx`** — Loads words on mount, holds `mode` state, renders ModeSelector or active game component.
-
-**`ModeSelector.jsx`** — Three clickable cards describing each mode. Shows compatibility warning for mode 3 if SpeechRecognition unavailable.
-
-**`FixSpelling.jsx`** — Shows misspelled word, text input, submit. Compares normalized input to correct word.
-
-**`ListenType.jsx`** — Speaks word on load, provides replay button, text input for typing. Word never shown until after attempt.
-
-**`ListenSpeak.jsx`** — Speaks word, record button starts recognition, compares any of the returned alternatives against correct word. Handles permission errors gracefully.
-
-**`Feedback.jsx`** — Reusable: shows correct (green) or incorrect (red + reveals answer) + "Next word" button.
-
-### 5. Styling (`App.css`)
-- Gold/yellow spelling bee theme
-- Centered layout, max-width 600px
-- Card-based mode selector
-- Green/red feedback colors
-- Mobile-friendly
+- `buildPool(words, progressMap)` — returns words with `correct_count < 2`
+- `applyAnswer(pool, progressMap, word, correct)` — increments count on correct; removes from pool when count reaches 2
+- `countMastered(words, progressMap)` — `{ mastered, total }`
+- `pickFromPool(pool)` — random pick
 
 ## Browser Compatibility Notes
 
-- SpeechRecognition only works in Chrome/Edge. Mode 3 will show a fallback message in Firefox/Safari.
-- SpeechSynthesis works in all modern browsers.
-- Feature detection at runtime, not build time.
+- SpeechRecognition (Mode 3) only works in Chrome/Edge; graceful fallback in Firefox/Safari
+- SpeechSynthesis works in all modern browsers
+- `node:sqlite` requires Node.js v22+
 
-## Verification
+## Running
 
-1. `npm run dev` — app loads without errors
-2. Mode 1: misspelled word displays, typing correct spelling shows green feedback, wrong shows red + answer
-3. Mode 2: word is spoken aloud, replay works, typing correct/incorrect produces right feedback
-4. Mode 3 (Chrome): word is spoken, clicking record captures speech, comparison works
-5. Mode 3 (Firefox): shows "not supported" message gracefully
-6. "Back to menu" navigates back, new word loads each time
+```bash
+# Backend (port 3001)
+cd server && npm run dev
+
+# Frontend (port 5173, binds to all interfaces)
+npm run dev
+```
+
+Access at `http://localhost:5173/` or `http://10.1.1.2:5173/` on the local network.
