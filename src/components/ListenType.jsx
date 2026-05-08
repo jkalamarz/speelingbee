@@ -4,6 +4,7 @@ import { fetchProgress, recordAnswer } from '../utils/api';
 import { buildPool, countMastered, pickFromPool, applyAnswer } from '../utils/session';
 import Feedback from './Feedback';
 import CompletionScreen from './CompletionScreen';
+import LetterInput from './LetterInput';
 
 export default function ListenType({ words, player, stage, mode, onChangeMode, onChangeStage }) {
   const [pool, setPool] = useState([]);
@@ -44,8 +45,7 @@ export default function ListenType({ words, player, stage, mode, onChangeMode, o
   const handleReplay = () => currentWord && speak(currentWord.word);
   const handleExample = () => currentWord?.sentence && speak(currentWord.sentence);
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const handleSubmit = async () => {
     if (!userInput.trim() || !currentWord) return;
     const correct = userInput.trim().toLowerCase() === currentWord.word;
     await recordAnswer(player.id, stage, mode, currentWord.word, correct);
@@ -93,16 +93,10 @@ export default function ListenType({ words, player, stage, mode, onChangeMode, o
         <button className="btn example-btn" onClick={handleExample}>Hear Example</button>
       )}
       {!feedback && (
-        <form onSubmit={handleSubmit}>
-          <input
-            type="text"
-            value={userInput}
-            onChange={e => setUserInput(e.target.value)}
-            placeholder="Type the word you heard..."
-            autoFocus
-          />
-          <button className="btn" type="submit">Check</button>
-        </form>
+        <div className="input-row">
+          <LetterInput value={userInput} onChange={setUserInput} onSubmit={handleSubmit} />
+          <button className="btn" onClick={handleSubmit} disabled={!userInput}>Check</button>
+        </div>
       )}
       <Feedback feedback={feedback} correctWord={currentWord?.word} onNext={nextWord} />
     </div>

@@ -4,6 +4,7 @@ import { fetchProgress, recordAnswer } from '../utils/api';
 import { buildPool, countMastered, pickFromPool, applyAnswer } from '../utils/session';
 import Feedback from './Feedback';
 import CompletionScreen from './CompletionScreen';
+import LetterInput from './LetterInput';
 
 function makeWordState(entry) {
   return entry ? { entry, misspelled: generateMisspelling(entry.word) } : null;
@@ -33,8 +34,7 @@ export default function FixSpelling({ words, player, stage, mode, onChangeMode, 
     });
   }, []);
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const handleSubmit = async () => {
     if (!userInput.trim() || !wordState) return;
     const correct = userInput.trim().toLowerCase() === wordState.entry.word;
     await recordAnswer(player.id, stage, mode, wordState.entry.word, correct);
@@ -75,16 +75,10 @@ export default function FixSpelling({ words, player, stage, mode, onChangeMode, 
       <p className="progress-counter">Words mastered: {mastered}/{total}</p>
       <p className="misspelled-word">{wordState?.misspelled}</p>
       {!feedback && (
-        <form onSubmit={handleSubmit}>
-          <input
-            type="text"
-            value={userInput}
-            onChange={e => setUserInput(e.target.value)}
-            placeholder="Type the correct spelling..."
-            autoFocus
-          />
-          <button className="btn" type="submit">Check</button>
-        </form>
+        <div className="input-row">
+          <LetterInput value={userInput} onChange={setUserInput} onSubmit={handleSubmit} />
+          <button className="btn" onClick={handleSubmit} disabled={!userInput}>Check</button>
+        </div>
       )}
       <Feedback feedback={feedback} correctWord={wordState?.entry.word} onNext={nextWord} />
     </div>
