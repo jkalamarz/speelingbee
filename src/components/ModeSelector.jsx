@@ -7,6 +7,10 @@ export default function ModeSelector({ onSelectMode }) {
     <div className="mode-selector">
       <h2>Choose a Mode</h2>
       <div className="mode-cards">
+        <button className="mode-card" onClick={() => onSelectMode('learn')}>
+          <h3>Learn</h3>
+          <p>Browse all words and listen to them</p>
+        </button>
         <button className="mode-card" onClick={() => onSelectMode('fix')}>
           <h3>Fix the Spelling</h3>
           <p>See a misspelled word, type the correction</p>

@@ -6,6 +6,7 @@ import ModeSelector from './components/ModeSelector';
 import FixSpelling from './components/FixSpelling';
 import ListenType from './components/ListenType';
 import ListenSpeak from './components/ListenSpeak';
+import Learn from './components/Learn';
 
 export default function App() {
   const [player, setPlayer] = useState(null);
@@ -76,6 +77,7 @@ export default function App() {
         {!player && <PlayerPicker onSelectPlayer={setPlayer} />}
         {player && !stage && <StageSelector onSelectStage={setStage} />}
         {player && stage && !mode && <ModeSelector onSelectMode={setMode} />}
+        {mode === 'learn' && <Learn {...gameProps} />}
         {mode === 'fix' && <FixSpelling {...gameProps} />}
         {mode === 'listen-type' && <ListenType {...gameProps} />}
         {mode === 'listen-speak' && <ListenSpeak {...gameProps} />}
