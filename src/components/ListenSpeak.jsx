@@ -178,10 +178,12 @@ export default function ListenSpeak({ words, player, stage, mode, onChangeMode, 
         Words mastered: {mastered}/{total}
       </button>
       <p className="instruction">Spell the word letter by letter.</p>
-      <button className="btn replay-btn" onClick={handleReplay}>Replay</button>
-      {currentWord?.sentence && (
-        <button className="btn example-btn" onClick={handleExample}>Hear Example</button>
-      )}
+      <div className="audio-btns">
+        <button className="btn replay-btn" onClick={handleReplay}>Replay</button>
+        {currentWord?.sentence && (
+          <button className="btn example-btn" onClick={handleExample}>Hear Example</button>
+        )}
+      </div>
 
       {!feedback && (
         <>

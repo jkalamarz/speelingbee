@@ -285,14 +285,14 @@ input[type="text"]:focus {
   background: var(--gold-dark);
 }
 
-.replay-btn {
-  display: inline-block;
-  margin: 0 0.5rem 1.5rem;
+.audio-btns {
+  display: flex;
+  justify-content: center;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
 }
 
 .example-btn {
-  display: inline-block;
-  margin: 0 0.5rem 1.5rem;
   background-color: #b8860b;
 }
 

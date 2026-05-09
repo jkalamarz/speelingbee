@@ -97,10 +97,12 @@ export default function ListenType({ words, player, stage, mode, onChangeMode, o
         Words mastered: {mastered}/{total}
       </button>
       <p className="instruction">Listen to the word and type it below.</p>
-      <button className="btn replay-btn" onClick={handleReplay}>Replay</button>
-      {currentWord?.sentence && (
-        <button className="btn example-btn" onClick={handleExample}>Hear Example</button>
-      )}
+      <div className="audio-btns">
+        <button className="btn replay-btn" onClick={handleReplay}>Replay</button>
+        {currentWord?.sentence && (
+          <button className="btn example-btn" onClick={handleExample}>Hear Example</button>
+        )}
+      </div>
       {!feedback && (
         <div className="input-row">
           <LetterInput value={userInput} onChange={setUserInput} onSubmit={handleSubmit} />

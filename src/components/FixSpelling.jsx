@@ -84,9 +84,11 @@ export default function FixSpelling({ words, player, stage, mode, onChangeMode, 
       </button>
       <p className="misspelled-word">{wordState?.misspelled}</p>
       {wordState?.entry.sentence && (
-        <button className="btn example-btn" onClick={() => speak(wordState.entry.sentence)}>
-          Hear Example
-        </button>
+        <div className="audio-btns">
+          <button className="btn example-btn" onClick={() => speak(wordState.entry.sentence)}>
+            Hear Example
+          </button>
+        </div>
       )}
       {!feedback && (
         <div className="input-row">
