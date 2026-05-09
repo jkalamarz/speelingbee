@@ -14,6 +14,7 @@ export default function App() {
   const [words, setWords] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [showExtras, setShowExtras] = useState(false);
 
   useEffect(() => {
     loadWords()
@@ -21,6 +22,9 @@ export default function App() {
       .catch(() => setError('Failed to load word list.'))
       .finally(() => setLoading(false));
   }, []);
+
+  // Hide extras whenever the active mode changes (new game session)
+  useEffect(() => { setShowExtras(false); }, [mode]);
 
   const stageWords = useMemo(
     () => (stage ? filterWordsByStage(words, stage) : []),
@@ -45,10 +49,11 @@ export default function App() {
     mode,
     onChangeMode: () => setMode(null),
     onChangeStage: () => { setMode(null); setStage(null); },
+    onInteract: () => setShowExtras(false),
   };
 
   return (
-    <div className="container">
+    <div className={`container${showExtras ? ' show-extras' : ''}`}>
       <header>
         <h1>Speeling Bee</h1>
         {player && (
@@ -56,6 +61,15 @@ export default function App() {
             <span className="player-name">{player.name}</span>
             <button className="btn back-btn" onClick={goBack}>{backLabel}</button>
           </div>
+        )}
+        {mode && (
+          <button
+            className="extras-toggle"
+            onClick={() => setShowExtras(v => !v)}
+            aria-label={showExtras ? 'Hide menu' : 'Show menu'}
+          >
+            {showExtras ? '▲ hide' : '▼ more'}
+          </button>
         )}
       </header>
       <main>

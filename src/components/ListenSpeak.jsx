@@ -6,7 +6,7 @@ import Feedback from './Feedback';
 import CompletionScreen from './CompletionScreen';
 import MasteredWords from './MasteredWords';
 
-export default function ListenSpeak({ words, player, stage, mode, onChangeMode, onChangeStage }) {
+export default function ListenSpeak({ words, player, stage, mode, onChangeMode, onChangeStage, onInteract }) {
   const [pool, setPool] = useState([]);
   const [progressMap, setProgressMap] = useState(new Map());
   const [currentWord, setCurrentWord] = useState(null);
@@ -94,7 +94,7 @@ export default function ListenSpeak({ words, player, stage, mode, onChangeMode, 
 
   const handleReplay = () => currentWord && speak(currentWord.word);
   const handleExample = () => currentWord?.sentence && speak(currentWord.sentence);
-  const handleRecord = () => startRecordingRef.current?.();
+  const handleRecord = () => { onInteract?.(); startRecordingRef.current?.(); };
 
   const handleStop = () => {
     autoAdvanceRef.current = false;

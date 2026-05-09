@@ -12,7 +12,7 @@ function makeWordState(entry) {
   return entry ? { entry, misspelled: generateMisspelling(entry.word) } : null;
 }
 
-export default function FixSpelling({ words, player, stage, mode, onChangeMode, onChangeStage }) {
+export default function FixSpelling({ words, player, stage, mode, onChangeMode, onChangeStage, onInteract }) {
   const [pool, setPool] = useState([]);
   const [progressMap, setProgressMap] = useState(new Map());
   const [wordState, setWordState] = useState(null);
@@ -92,7 +92,11 @@ export default function FixSpelling({ words, player, stage, mode, onChangeMode, 
       )}
       {!feedback && (
         <div className="input-row">
-          <LetterInput value={userInput} onChange={setUserInput} onSubmit={handleSubmit} />
+          <LetterInput
+            value={userInput}
+            onChange={v => { if (!userInput) onInteract?.(); setUserInput(v); }}
+            onSubmit={handleSubmit}
+          />
           <button className="btn" onClick={handleSubmit} disabled={!userInput}>Check</button>
         </div>
       )}

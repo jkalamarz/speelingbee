@@ -377,13 +377,34 @@ input[type="text"]:focus {
   margin: 1rem 0;
 }
 
+/* Toggle shown only on mobile */
+.extras-toggle {
+  display: none;
+}
+
 @media (max-width: 480px) {
   header h1 {
-    font-size: 2rem;
+    display: none;
+  }
+
+  .player-name {
+    display: none;
+  }
+
+  .back-btn {
+    display: none;
+  }
+
+  .instruction {
+    display: none;
+  }
+
+  header {
+    margin-bottom: 0.5rem;
   }
 
   .game-area {
-    padding: 1.5rem 1rem;
+    padding: 1rem;
   }
 
   .misspelled-word {
@@ -392,6 +413,43 @@ input[type="text"]:focus {
 
   form {
     flex-direction: column;
+  }
+
+  /* Toggle button */
+  .extras-toggle {
+    display: block;
+    background: none;
+    border: none;
+    font-size: 0.75rem;
+    color: #aaa;
+    padding: 0.1rem 0.4rem;
+    cursor: pointer;
+    margin: 0 auto;
+  }
+
+  .extras-toggle:hover {
+    color: var(--gold-dark);
+  }
+
+  /* Restore hidden elements when show-extras is active */
+  .show-extras header h1 {
+    display: block;
+  }
+
+  .show-extras .player-name {
+    display: inline;
+  }
+
+  .show-extras .back-btn {
+    display: inline-flex;
+  }
+
+  .show-extras .instruction {
+    display: block;
+  }
+
+  .show-extras header {
+    margin-bottom: 1rem;
   }
 }
 
