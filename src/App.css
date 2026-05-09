@@ -179,6 +179,10 @@ header h1 {
 }
 
 input.letter-cell-active {
+  width: 2.2rem;
+  min-width: 0;
+  max-width: 2.2rem;
+  flex: 0 0 2.2rem;
   background: #fff;
   border-color: var(--gold-dark);
   border-width: 2px;
