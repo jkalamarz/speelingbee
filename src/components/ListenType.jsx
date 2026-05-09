@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { speak } from '../utils/speech';
+import { speak, cancelSpeak } from '../utils/speech';
 import { fetchProgress, recordAnswer } from '../utils/api';
 import { buildPool, countMastered, pickFromPool, applyAnswer } from '../utils/session';
 import Feedback from './Feedback';
@@ -37,6 +37,7 @@ export default function ListenType({ words, player, stage, mode, onChangeMode, o
       }
       setLoadingProgress(false);
     });
+    return () => cancelSpeak();
   }, []);
 
   useEffect(() => { poolRef.current = pool; }, [pool]);
