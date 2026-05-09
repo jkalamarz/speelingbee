@@ -20,18 +20,13 @@ npm install
 cd server && npm install
 ```
 
-**2. Start the backend** (port 3001)
-
-```bash
-cd server
-npm run dev
-```
-
-**3. Start the frontend** (port 5173)
+**2. Start both servers**
 
 ```bash
 npm run dev
 ```
+
+This starts the Express backend (port 3001) and the Vite frontend (port 5173) together.
 
 The app is available at `http://localhost:5173/` or `http://10.1.1.2:5173/` from the local network.
 
