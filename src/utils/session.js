@@ -9,6 +9,10 @@ export function countMastered(words, progressMap) {
   return { mastered, total: words.length };
 }
 
+export function getMasteredWords(words, progressMap) {
+  return words.filter(w => (progressMap.get(w.word) ?? 0) >= MASTERY_THRESHOLD);
+}
+
 export function pickFromPool(pool) {
   if (!pool.length) return null;
   return pool[Math.floor(Math.random() * pool.length)];

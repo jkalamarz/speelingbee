@@ -1,9 +1,10 @@
 import { useState, useEffect, useRef } from 'react';
 import { speak, cancelSpeak, createRecognizer } from '../utils/speech';
 import { fetchProgress, recordAnswer } from '../utils/api';
-import { buildPool, countMastered, pickFromPool, applyAnswer } from '../utils/session';
+import { buildPool, countMastered, getMasteredWords, pickFromPool, applyAnswer } from '../utils/session';
 import Feedback from './Feedback';
 import CompletionScreen from './CompletionScreen';
+import MasteredWords from './MasteredWords';
 
 export default function ListenSpeak({ words, player, stage, mode, onChangeMode, onChangeStage }) {
   const [pool, setPool] = useState([]);
@@ -17,6 +18,7 @@ export default function ListenSpeak({ words, player, stage, mode, onChangeMode, 
   const [pendingLetter, setPendingLetter] = useState(null);
   const [isRecording, setIsRecording] = useState(false);
   const [error, setError] = useState('');
+  const [showMastered, setShowMastered] = useState(false);
 
   const wordRef = useRef(null);
   const poolRef = useRef([]);
@@ -165,10 +167,16 @@ export default function ListenSpeak({ words, player, stage, mode, onChangeMode, 
   const phase = isRecording ? 'recording' : pendingLetter ? 'pending' : 'ready';
   const hasLetters = confirmedLetters.length > 0 || pendingLetter;
 
+  if (showMastered) {
+    return <MasteredWords words={getMasteredWords(words, progressMap)} onClose={() => setShowMastered(false)} />;
+  }
+
   return (
     <div className="game-area">
       <h2>Listen &amp; Speak</h2>
-      <p className="progress-counter">Words mastered: {mastered}/{total}</p>
+      <button className="progress-counter" onClick={() => setShowMastered(true)}>
+        Words mastered: {mastered}/{total}
+      </button>
       <p className="instruction">Spell the word letter by letter.</p>
       <button className="btn replay-btn" onClick={handleReplay}>Replay</button>
       {currentWord?.sentence && (

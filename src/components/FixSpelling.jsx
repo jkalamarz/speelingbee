@@ -2,10 +2,11 @@ import { useState, useEffect, useCallback } from 'react';
 import { generateMisspelling } from '../utils/misspell';
 import { speak } from '../utils/speech';
 import { fetchProgress, recordAnswer } from '../utils/api';
-import { buildPool, countMastered, pickFromPool, applyAnswer } from '../utils/session';
+import { buildPool, countMastered, getMasteredWords, pickFromPool, applyAnswer } from '../utils/session';
 import Feedback from './Feedback';
 import CompletionScreen from './CompletionScreen';
 import LetterInput from './LetterInput';
+import MasteredWords from './MasteredWords';
 
 function makeWordState(entry) {
   return entry ? { entry, misspelled: generateMisspelling(entry.word) } : null;
@@ -19,6 +20,7 @@ export default function FixSpelling({ words, player, stage, mode, onChangeMode, 
   const [feedback, setFeedback] = useState(null);
   const [completed, setCompleted] = useState(false);
   const [loadingProgress, setLoadingProgress] = useState(true);
+  const [showMastered, setShowMastered] = useState(false);
 
   useEffect(() => {
     fetchProgress(player.id, stage, mode).then(({ progress }) => {
@@ -70,10 +72,16 @@ export default function FixSpelling({ words, player, stage, mode, onChangeMode, 
 
   const { mastered, total } = countMastered(words, progressMap);
 
+  if (showMastered) {
+    return <MasteredWords words={getMasteredWords(words, progressMap)} onClose={() => setShowMastered(false)} />;
+  }
+
   return (
     <div className="game-area">
       <h2>Fix the Spelling</h2>
-      <p className="progress-counter">Words mastered: {mastered}/{total}</p>
+      <button className="progress-counter" onClick={() => setShowMastered(true)}>
+        Words mastered: {mastered}/{total}
+      </button>
       <p className="misspelled-word">{wordState?.misspelled}</p>
       {wordState?.entry.sentence && (
         <button className="btn example-btn" onClick={() => speak(wordState.entry.sentence)}>
