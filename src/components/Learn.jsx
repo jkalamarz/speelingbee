@@ -9,7 +9,7 @@ export default function Learn({ words, onChangeMode, onChangeStage }) {
       <h2>Learn</h2>
       <p className="instruction">Listen to the words before you start practicing.</p>
       <ul className="learn-list">
-        {words.map(({ word, sentence, pronunciation, meaning }) => (
+        {[...words].sort((a, b) => a.word.localeCompare(b.word)).map(({ word, sentence, pronunciation, meaning }) => (
           <li key={word} className="learn-item">
             <div className="learn-word-info">
               <div className="learn-word-header">
