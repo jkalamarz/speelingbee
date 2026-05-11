@@ -1,4 +1,4 @@
-# Speeling Bee
+# Spelling Bee
 
 A spelling practice web app with three game modes, player progress tracking, and a mastery-based word cycle.
 

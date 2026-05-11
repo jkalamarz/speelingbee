@@ -56,7 +56,7 @@ export default function App() {
   return (
     <div className={`container${showExtras ? ' show-extras' : ''}`}>
       <header>
-        <h1>Speeling Bee</h1>
+        <h1>Spelling Bee</h1>
         {player && (
           <div className="header-right">
             <span className="player-name">{player.name}</span>

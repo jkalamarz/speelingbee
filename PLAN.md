@@ -1,4 +1,4 @@
-# Speeling Bee - Implementation Plan
+# Spelling Bee - Implementation Plan
 
 ## Context
 
