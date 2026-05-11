@@ -3,6 +3,12 @@ const db = require('../db');
 
 const router = express.Router();
 
+router.get('/:playerId/:stage', (req, res) => {
+  const { playerId, stage } = req.params;
+  const progress = db.getStageProgress(Number(playerId), stage);
+  res.json({ progress });
+});
+
 router.get('/:playerId/:stage/:mode', (req, res) => {
   const { playerId, stage, mode } = req.params;
   const progress = db.getProgress(Number(playerId), stage, mode);

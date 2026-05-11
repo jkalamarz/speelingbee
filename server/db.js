@@ -9,6 +9,9 @@ const db = new DatabaseSync(path.join(dataDir, 'speelingbee.db'));
 
 function initialize() {
   db.exec(`
+    ALTER TABLE progress ADD COLUMN IF NOT EXISTS total_count INTEGER NOT NULL DEFAULT 0;
+  `);
+  db.exec(`
     PRAGMA journal_mode = WAL;
     PRAGMA foreign_keys = ON;
     CREATE TABLE IF NOT EXISTS players (
@@ -23,6 +26,7 @@ function initialize() {
       mode          TEXT NOT NULL,
       word          TEXT NOT NULL,
       correct_count INTEGER NOT NULL DEFAULT 0,
+      total_count   INTEGER NOT NULL DEFAULT 0,
       UNIQUE(player_id, stage, mode, word)
     );
   `);
@@ -44,19 +48,31 @@ function getProgress(playerId, stage, mode) {
   ).all(playerId, stage, mode);
 }
 
+function getStageProgress(playerId, stage) {
+  return db.prepare(`
+    SELECT word,
+           SUM(correct_count) AS correct_count,
+           SUM(total_count)   AS total_count
+    FROM progress
+    WHERE player_id = ? AND stage = ?
+    GROUP BY word
+  `).all(playerId, stage);
+}
+
 function recordAnswer(playerId, stage, mode, word, correct) {
   if (correct) {
     db.prepare(`
-      INSERT INTO progress (player_id, stage, mode, word, correct_count)
-      VALUES (?, ?, ?, ?, 1)
+      INSERT INTO progress (player_id, stage, mode, word, correct_count, total_count)
+      VALUES (?, ?, ?, ?, 1, 1)
       ON CONFLICT(player_id, stage, mode, word)
-      DO UPDATE SET correct_count = correct_count + 1
+      DO UPDATE SET correct_count = correct_count + 1, total_count = total_count + 1
     `).run(playerId, stage, mode, word);
   } else {
     db.prepare(`
-      INSERT INTO progress (player_id, stage, mode, word, correct_count)
-      VALUES (?, ?, ?, ?, 0)
-      ON CONFLICT(player_id, stage, mode, word) DO NOTHING
+      INSERT INTO progress (player_id, stage, mode, word, correct_count, total_count)
+      VALUES (?, ?, ?, ?, 0, 1)
+      ON CONFLICT(player_id, stage, mode, word)
+      DO UPDATE SET total_count = total_count + 1
     `).run(playerId, stage, mode, word);
   }
   const row = db.prepare(
@@ -66,4 +82,4 @@ function recordAnswer(playerId, stage, mode, word, correct) {
   return { word, correct_count, mastered: correct_count >= 2 };
 }
 
-module.exports = { initialize, getAllPlayers, createPlayer, getProgress, recordAnswer };
+module.exports = { initialize, getAllPlayers, createPlayer, getProgress, getStageProgress, recordAnswer };

@@ -624,6 +624,12 @@ input[type="text"]:focus {
   white-space: nowrap;
 }
 
+.learn-counter {
+  font-size: 0.75rem;
+  color: #999;
+  white-space: nowrap;
+}
+
 .learn-meaning {
   font-size: 0.85rem;
   color: #555;

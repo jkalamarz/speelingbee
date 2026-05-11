@@ -21,6 +21,10 @@ export function fetchProgress(playerId, stage, mode) {
   return apiFetch(`/api/progress/${playerId}/${encodeURIComponent(stage)}/${encodeURIComponent(mode)}`);
 }
 
+export function fetchStageProgress(playerId, stage) {
+  return apiFetch(`/api/progress/${playerId}/${encodeURIComponent(stage)}`);
+}
+
 export function recordAnswer(playerId, stage, mode, word, correct) {
   return apiFetch(
     `/api/progress/${playerId}/${encodeURIComponent(stage)}/${encodeURIComponent(mode)}/${encodeURIComponent(word)}`,
