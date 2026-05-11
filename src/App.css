@@ -600,9 +600,15 @@ input[type="text"]:focus {
 
 .learn-word-info {
   display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  min-width: 0;
+}
+
+.learn-word-header {
+  display: flex;
   align-items: baseline;
   gap: 0.5rem;
-  min-width: 0;
 }
 
 .learn-word {
@@ -616,6 +622,11 @@ input[type="text"]:focus {
   color: #777;
   font-style: italic;
   white-space: nowrap;
+}
+
+.learn-meaning {
+  font-size: 0.85rem;
+  color: #555;
 }
 
 .learn-btns {

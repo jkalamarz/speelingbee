@@ -9,11 +9,14 @@ export default function Learn({ words, onChangeMode, onChangeStage }) {
       <h2>Learn</h2>
       <p className="instruction">Listen to the words before you start practicing.</p>
       <ul className="learn-list">
-        {words.map(({ word, sentence, pronunciation }) => (
+        {words.map(({ word, sentence, pronunciation, meaning }) => (
           <li key={word} className="learn-item">
             <div className="learn-word-info">
-              <span className="learn-word">{word}</span>
-              {pronunciation && <span className="learn-pronunciation">{pronunciation}</span>}
+              <div className="learn-word-header">
+                <span className="learn-word">{word}</span>
+                {pronunciation && <span className="learn-pronunciation">{pronunciation}</span>}
+              </div>
+              {meaning && <span className="learn-meaning">{meaning}</span>}
             </div>
             <div className="learn-btns">
               <button className="btn learn-play-btn" onClick={() => speak(word)}>Play</button>
