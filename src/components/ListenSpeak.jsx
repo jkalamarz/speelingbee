@@ -70,7 +70,8 @@ export default function ListenSpeak({ words, player, stage, mode, onChangeMode, 
       async (results) => {
         setListening(false);
         const word = wordRef.current?.word;
-        const correct = results.some(r => r === word);
+        const normalize = r => r.includes(' ') ? r.replace(/\s+/g, '') : r;
+        const correct = results.some(r => normalize(r) === word);
         setRecognizedText(results[0]);
         if (retryingRef.current) {
           retryingRef.current = false;
