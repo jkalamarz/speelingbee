@@ -50,10 +50,19 @@ export default function ListenSpeak({ words, player, stage, mode, onChangeMode, 
   const handleReplay = () => currentWord && speak(currentWord.word);
   const handleExample = () => currentWord?.sentence && speak(currentWord.sentence);
 
-  const handleRecord = () => {
+  const handleRecord = async () => {
     onInteract?.();
     setError('');
     setRecognizedText('');
+
+    if (navigator.permissions) {
+      try {
+        const status = await navigator.permissions.query({ name: 'microphone' });
+        console.log('[ListenSpeak] microphone permission state:', status.state);
+      } catch (e) {
+        console.warn('[ListenSpeak] permissions.query failed:', e);
+      }
+    }
 
     const recognizer = createRecognizer(
       async (results) => {
@@ -69,6 +78,7 @@ export default function ListenSpeak({ words, player, stage, mode, onChangeMode, 
       },
       (err) => {
         setListening(false);
+        console.error('[ListenSpeak] recognition error:', err);
         if (err === 'not-allowed') setError('Microphone access denied.');
         else if (err === 'no-speech') setError('No speech detected. Please try again.');
         else setError(`Recognition error: ${err}`);
@@ -82,6 +92,7 @@ export default function ListenSpeak({ words, player, stage, mode, onChangeMode, 
 
     recognizerRef.current = recognizer;
     setListening(true);
+    console.log('[ListenSpeak] starting recognizer');
     recognizer.start();
   };
 
