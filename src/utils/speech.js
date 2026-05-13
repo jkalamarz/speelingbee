@@ -38,7 +38,7 @@ export function cancelSpeak() {
   window.speechSynthesis.cancel();
 }
 
-export function createRecognizer(onResult, onError) {
+export function createRecognizer(onResult, onError, { continuous = false } = {}) {
   const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
   if (!SpeechRecognition) {
     return null;
@@ -46,15 +46,31 @@ export function createRecognizer(onResult, onError) {
   const recognition = new SpeechRecognition();
   recognition.lang = 'en-US';
   recognition.interimResults = false;
-  recognition.maxAlternatives = 3;
+  recognition.maxAlternatives = continuous ? 1 : 3;
+  recognition.continuous = continuous;
 
-  recognition.onresult = (event) => {
-    const results = [];
-    for (let i = 0; i < event.results[0].length; i++) {
-      results.push(event.results[0][i].transcript.trim().toLowerCase());
-    }
-    onResult(results);
-  };
+  if (continuous) {
+    let accumulated = '';
+    recognition.onresult = (event) => {
+      for (let i = event.resultIndex; i < event.results.length; i++) {
+        if (event.results[i].isFinal) {
+          const segment = event.results[i][0].transcript.trim().toLowerCase();
+          accumulated += (accumulated ? ' ' : '') + segment;
+        }
+      }
+    };
+    recognition.onend = () => {
+      if (accumulated) onResult([accumulated]);
+    };
+  } else {
+    recognition.onresult = (event) => {
+      const results = [];
+      for (let i = 0; i < event.results[0].length; i++) {
+        results.push(event.results[0][i].transcript.trim().toLowerCase());
+      }
+      onResult(results);
+    };
+  }
 
   recognition.onerror = (event) => {
     onError(event.error);

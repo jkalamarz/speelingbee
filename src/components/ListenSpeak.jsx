@@ -68,9 +68,9 @@ export default function ListenSpeak({ words, player, stage, mode, onChangeMode, 
 
     const recognizer = createRecognizer(
       async (results) => {
-        setListening(false);
+        setListening(false); // fires after stop() triggers onend
         const word = wordRef.current?.word;
-        const normalize = r => r.includes(' ') ? r.replace(/\s+/g, '') : r;
+        const normalize = r => r.includes(' ') ? r.replace(/\s+/g, '') : '';
         const correct = results.some(r => normalize(r) === word);
         setRecognizedText(results[0]);
         if (retryingRef.current) {
@@ -91,7 +91,8 @@ export default function ListenSpeak({ words, player, stage, mode, onChangeMode, 
         if (err === 'not-allowed') setError('Microphone access denied.');
         else if (err === 'no-speech') setError('No speech detected. Please try again.');
         else setError(`Recognition error: ${err}`);
-      }
+      },
+      { continuous: true }
     );
 
     if (!recognizer) {
