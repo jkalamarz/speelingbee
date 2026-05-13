@@ -11,10 +11,10 @@ export default function Feedback({ feedback, correctWord, onNext, onRetry }) {
         </p>
       )}
       <div className="feedback-actions">
-        {feedback === 'incorrect' && onRetry && (
-          <button className="btn" onClick={onRetry}>Try Again</button>
-        )}
-        <button className="btn" onClick={onNext}>Next Word</button>
+        {feedback === 'incorrect' && onRetry
+          ? <button className="btn" onClick={onRetry}>Try Again</button>
+          : <button className="btn" onClick={onNext}>Next Word</button>
+        }
       </div>
     </div>
   );
