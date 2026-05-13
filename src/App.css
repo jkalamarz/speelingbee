@@ -352,6 +352,14 @@ input[type="text"]:focus {
   background: #c0392b;
 }
 
+.cancel-btn {
+  background: #888;
+}
+
+.cancel-btn:hover {
+  background: #666;
+}
+
 .listening-indicator {
   margin-top: 0.5rem;
   color: var(--green);

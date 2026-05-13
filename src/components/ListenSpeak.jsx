@@ -24,6 +24,7 @@ export default function ListenSpeak({ words, player, stage, mode, onChangeMode, 
   const progressMapRef = useRef(new Map());
   const recognizerRef = useRef(null);
   const retryingRef = useRef(false);
+  const cancelledRef = useRef(false);
 
   useEffect(() => {
     fetchProgress(player.id, stage, mode).then(({ progress }) => {
@@ -57,9 +58,12 @@ export default function ListenSpeak({ words, player, stage, mode, onChangeMode, 
     setError('');
     setRecognizedText('');
 
+    cancelledRef.current = false;
+
     const recognizer = createRecognizer(
       async (results) => {
         setListening(false); // fires after stop() triggers onend
+        if (cancelledRef.current) { cancelledRef.current = false; return; }
         const word = wordRef.current?.word;
         const normalize = r => r.includes(' ') ? r.replace(/\s+/g, '') : '';
         const correct = results.some(r => normalize(r) === word);
@@ -98,6 +102,14 @@ export default function ListenSpeak({ words, player, stage, mode, onChangeMode, 
   const handleStop = () => {
     recognizerRef.current?.stop();
     setListening(false);
+  };
+
+  const handleCancel = () => {
+    cancelledRef.current = true;
+    recognizerRef.current?.stop();
+    setListening(false);
+    setRecognizedText('');
+    setError('');
   };
 
   const handleRetry = () => {
@@ -163,7 +175,10 @@ export default function ListenSpeak({ words, player, stage, mode, onChangeMode, 
           {!listening ? (
             <button className="btn record-btn" onClick={handleRecord}>Record</button>
           ) : (
-            <button className="btn stop-btn" onClick={handleStop}>Stop</button>
+            <>
+              <button className="btn stop-btn" onClick={handleStop}>Stop</button>
+              <button className="btn cancel-btn" onClick={handleCancel}>Cancel</button>
+            </>
           )}
           {listening && <p className="listening-indicator">Listening...</p>}
         </div>
