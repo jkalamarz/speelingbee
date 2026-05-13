@@ -33,10 +33,6 @@ export function speak(word, onEnd) {
   speakTimer = setTimeout(() => window.speechSynthesis.speak(utterance), 50);
 }
 
-export function speakSpelled(word) {
-  speak(word.split('').join(' '));
-}
-
 export function cancelSpeak() {
   clearTimeout(speakTimer);
   window.speechSynthesis.cancel();
