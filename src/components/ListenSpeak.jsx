@@ -57,15 +57,6 @@ export default function ListenSpeak({ words, player, stage, mode, onChangeMode, 
     setError('');
     setRecognizedText('');
 
-    if (navigator.permissions) {
-      try {
-        const status = await navigator.permissions.query({ name: 'microphone' });
-        console.log('[ListenSpeak] microphone permission state:', status.state);
-      } catch (e) {
-        console.warn('[ListenSpeak] permissions.query failed:', e);
-      }
-    }
-
     const recognizer = createRecognizer(
       async (results) => {
         setListening(false); // fires after stop() triggers onend
@@ -87,7 +78,6 @@ export default function ListenSpeak({ words, player, stage, mode, onChangeMode, 
       },
       (err) => {
         setListening(false);
-        console.error('[ListenSpeak] recognition error:', err);
         if (err === 'not-allowed') setError('Microphone access denied.');
         else if (err === 'no-speech') setError('No speech detected. Please try again.');
         else setError(`Recognition error: ${err}`);
@@ -102,7 +92,6 @@ export default function ListenSpeak({ words, player, stage, mode, onChangeMode, 
 
     recognizerRef.current = recognizer;
     setListening(true);
-    console.log('[ListenSpeak] starting recognizer');
     recognizer.start();
   };
 
