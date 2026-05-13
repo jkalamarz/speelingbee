@@ -16,6 +16,7 @@ export default function ListenType({ words, player, stage, mode, onChangeMode, o
   const [completed, setCompleted] = useState(false);
   const [loadingProgress, setLoadingProgress] = useState(true);
   const [showMastered, setShowMastered] = useState(false);
+  const [retrying, setRetrying] = useState(false);
 
   const wordRef = useRef(null);
   const poolRef = useRef([]);
@@ -51,11 +52,23 @@ export default function ListenType({ words, player, stage, mode, onChangeMode, o
   const handleSubmit = async () => {
     if (!userInput.trim() || !currentWord) return;
     const correct = userInput.trim().toLowerCase() === currentWord.word;
+    if (retrying) {
+      setFeedback(correct ? 'correct' : 'incorrect');
+      setRetrying(false);
+      return;
+    }
     await recordAnswer(player.id, stage, mode, currentWord.word, correct);
     const { newPool, newProgressMap } = applyAnswer(poolRef.current, progressMapRef.current, currentWord.word, correct);
     setPool(newPool);
     setProgressMap(newProgressMap);
     setFeedback(correct ? 'correct' : 'incorrect');
+  };
+
+  const handleRetry = () => {
+    setFeedback(null);
+    setUserInput('');
+    setRetrying(true);
+    speak(currentWord?.word);
   };
 
   const nextWord = () => {
@@ -68,6 +81,7 @@ export default function ListenType({ words, player, stage, mode, onChangeMode, o
     setCurrentWord(entry);
     setUserInput('');
     setFeedback(null);
+    setRetrying(false);
     speak(entry.word);
   };
 
@@ -96,7 +110,10 @@ export default function ListenType({ words, player, stage, mode, onChangeMode, o
       <button className="progress-counter" onClick={() => setShowMastered(true)}>
         Words mastered: {mastered}/{total}
       </button>
-      <p className="instruction">Listen to the word and type it below.</p>
+      {retrying
+        ? <p className="retry-hint">Spell it correctly: <strong>{currentWord?.word}</strong></p>
+        : <p className="instruction">Listen to the word and type it below.</p>
+      }
       <div className="audio-btns">
         <button className="btn replay-btn" onClick={handleReplay}>Replay</button>
         {currentWord?.sentence && (
@@ -113,7 +130,7 @@ export default function ListenType({ words, player, stage, mode, onChangeMode, o
           <button className="btn" onClick={handleSubmit} disabled={!userInput}>Check</button>
         </div>
       )}
-      <Feedback feedback={feedback} correctWord={currentWord?.word} onNext={nextWord} />
+      <Feedback feedback={feedback} correctWord={currentWord?.word} onNext={nextWord} onRetry={!retrying ? handleRetry : undefined} />
     </div>
   );
 }

@@ -363,6 +363,20 @@ input[type="text"]:focus {
   font-weight: 600;
 }
 
+.feedback-actions {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.retry-hint {
+  text-align: center;
+  font-size: 1.1rem;
+  margin-bottom: 1rem;
+  color: var(--text);
+}
+
 .feedback.correct .feedback-text {
   color: #155724;
 }

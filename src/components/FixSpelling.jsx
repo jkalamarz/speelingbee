@@ -21,6 +21,7 @@ export default function FixSpelling({ words, player, stage, mode, onChangeMode, 
   const [completed, setCompleted] = useState(false);
   const [loadingProgress, setLoadingProgress] = useState(true);
   const [showMastered, setShowMastered] = useState(false);
+  const [retrying, setRetrying] = useState(false);
 
   useEffect(() => {
     fetchProgress(player.id, stage, mode).then(({ progress }) => {
@@ -40,11 +41,22 @@ export default function FixSpelling({ words, player, stage, mode, onChangeMode, 
   const handleSubmit = async () => {
     if (!userInput.trim() || !wordState) return;
     const correct = userInput.trim().toLowerCase() === wordState.entry.word;
+    if (retrying) {
+      setFeedback(correct ? 'correct' : 'incorrect');
+      setRetrying(false);
+      return;
+    }
     await recordAnswer(player.id, stage, mode, wordState.entry.word, correct);
     const { newPool, newProgressMap } = applyAnswer(pool, progressMap, wordState.entry.word, correct);
     setPool(newPool);
     setProgressMap(newProgressMap);
     setFeedback(correct ? 'correct' : 'incorrect');
+  };
+
+  const handleRetry = () => {
+    setFeedback(null);
+    setUserInput('');
+    setRetrying(true);
   };
 
   const nextWord = useCallback(() => {
@@ -55,6 +67,7 @@ export default function FixSpelling({ words, player, stage, mode, onChangeMode, 
     setWordState(makeWordState(pickFromPool(pool)));
     setUserInput('');
     setFeedback(null);
+    setRetrying(false);
   }, [pool]);
 
   if (loadingProgress) return <div className="game-area"><p>Loading progress...</p></div>;
@@ -82,7 +95,10 @@ export default function FixSpelling({ words, player, stage, mode, onChangeMode, 
       <button className="progress-counter" onClick={() => setShowMastered(true)}>
         Words mastered: {mastered}/{total}
       </button>
-      <p className="misspelled-word">{wordState?.misspelled}</p>
+      {retrying
+        ? <p className="retry-hint">Spell it correctly: <strong>{wordState?.entry.word}</strong></p>
+        : <p className="misspelled-word">{wordState?.misspelled}</p>
+      }
       {wordState?.entry.sentence && (
         <div className="audio-btns">
           <button className="btn example-btn" onClick={() => speak(wordState.entry.sentence)}>
@@ -100,7 +116,7 @@ export default function FixSpelling({ words, player, stage, mode, onChangeMode, 
           <button className="btn" onClick={handleSubmit} disabled={!userInput}>Check</button>
         </div>
       )}
-      <Feedback feedback={feedback} correctWord={wordState?.entry.word} onNext={nextWord} />
+      <Feedback feedback={feedback} correctWord={wordState?.entry.word} onNext={nextWord} onRetry={!retrying ? handleRetry : undefined} />
     </div>
   );
 }

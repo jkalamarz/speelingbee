@@ -17,11 +17,13 @@ export default function ListenSpeak({ words, player, stage, mode, onChangeMode, 
   const [completed, setCompleted] = useState(false);
   const [loadingProgress, setLoadingProgress] = useState(true);
   const [showMastered, setShowMastered] = useState(false);
+  const [retrying, setRetrying] = useState(false);
 
   const wordRef = useRef(null);
   const poolRef = useRef([]);
   const progressMapRef = useRef(new Map());
   const recognizerRef = useRef(null);
+  const retryingRef = useRef(false);
 
   useEffect(() => {
     fetchProgress(player.id, stage, mode).then(({ progress }) => {
@@ -70,6 +72,12 @@ export default function ListenSpeak({ words, player, stage, mode, onChangeMode, 
         const word = wordRef.current?.word;
         const correct = results.some(r => r === word);
         setRecognizedText(results[0]);
+        if (retryingRef.current) {
+          retryingRef.current = false;
+          setRetrying(false);
+          setFeedback(correct ? 'correct' : 'incorrect');
+          return;
+        }
         await recordAnswer(player.id, stage, mode, word, correct);
         const { newPool, newProgressMap } = applyAnswer(poolRef.current, progressMapRef.current, word, correct);
         setPool(newPool);
@@ -101,6 +109,15 @@ export default function ListenSpeak({ words, player, stage, mode, onChangeMode, 
     setListening(false);
   };
 
+  const handleRetry = () => {
+    retryingRef.current = true;
+    setRetrying(true);
+    setFeedback(null);
+    setRecognizedText('');
+    setError('');
+    speak(currentWord?.word);
+  };
+
   const nextWord = () => {
     if (poolRef.current.length === 0) { setCompleted(true); return; }
     const entry = pickFromPool(poolRef.current);
@@ -110,6 +127,8 @@ export default function ListenSpeak({ words, player, stage, mode, onChangeMode, 
     setRecognizedText('');
     setError('');
     setListening(false);
+    retryingRef.current = false;
+    setRetrying(false);
     speak(entry.word);
   };
 
@@ -138,7 +157,10 @@ export default function ListenSpeak({ words, player, stage, mode, onChangeMode, 
       <button className="progress-counter" onClick={() => setShowMastered(true)}>
         Words mastered: {mastered}/{total}
       </button>
-      <p className="instruction">Listen to the word and say it back.</p>
+      {retrying
+        ? <p className="retry-hint">Say it correctly: <strong>{currentWord?.word}</strong></p>
+        : <p className="instruction">Listen to the word and say it back.</p>
+      }
       <div className="audio-btns">
         <button className="btn replay-btn" onClick={handleReplay}>Replay</button>
         {currentWord?.sentence && (
@@ -157,7 +179,7 @@ export default function ListenSpeak({ words, player, stage, mode, onChangeMode, 
       )}
       {recognizedText && <p className="recognized">You said: &quot;{recognizedText}&quot;</p>}
       {error && <p className="error-text">{error}</p>}
-      <Feedback feedback={feedback} correctWord={currentWord?.word} onNext={nextWord} />
+      <Feedback feedback={feedback} correctWord={currentWord?.word} onNext={nextWord} onRetry={!retrying ? handleRetry : undefined} />
     </div>
   );
 }
