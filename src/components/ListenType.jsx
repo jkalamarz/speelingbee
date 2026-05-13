@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { speak, cancelSpeak } from '../utils/speech';
+import { speak, speakSpelled, cancelSpeak } from '../utils/speech';
 import { fetchProgress, recordAnswer } from '../utils/api';
 import { buildPool, countMastered, getMasteredWords, pickFromPool, applyAnswer } from '../utils/session';
 import Feedback from './Feedback';
@@ -36,7 +36,7 @@ export default function ListenType({ words, player, stage, mode, onChangeMode, o
         const entry = pickFromPool(initialPool);
         wordRef.current = entry;
         setCurrentWord(entry);
-        speak(entry.word);
+        speakSpelled(entry.word);
       }
       setLoadingProgress(false);
     });
@@ -46,7 +46,7 @@ export default function ListenType({ words, player, stage, mode, onChangeMode, o
   useEffect(() => { poolRef.current = pool; }, [pool]);
   useEffect(() => { progressMapRef.current = progressMap; }, [progressMap]);
 
-  const handleReplay = () => currentWord && speak(currentWord.word);
+  const handleReplay = () => currentWord && speakSpelled(currentWord.word);
   const handleExample = () => currentWord?.sentence && speak(currentWord.sentence);
 
   const handleSubmit = async () => {
@@ -68,7 +68,7 @@ export default function ListenType({ words, player, stage, mode, onChangeMode, o
     setFeedback(null);
     setUserInput('');
     setRetrying(true);
-    speak(currentWord?.word);
+    speakSpelled(currentWord?.word);
   };
 
   const nextWord = () => {
@@ -82,7 +82,7 @@ export default function ListenType({ words, player, stage, mode, onChangeMode, o
     setUserInput('');
     setFeedback(null);
     setRetrying(false);
-    speak(entry.word);
+    speakSpelled(entry.word);
   };
 
   if (loadingProgress) return <div className="game-area"><p>Loading progress...</p></div>;
