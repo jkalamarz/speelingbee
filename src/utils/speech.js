@@ -1,9 +1,31 @@
 let speakTimer = null;
 
+const VOICE_KEY = 'spellingbee_voice';
+
+export function getEnglishVoices() {
+  return window.speechSynthesis.getVoices().filter(v => v.lang.startsWith('en'));
+}
+
+export function getSavedVoiceName() {
+  return localStorage.getItem(VOICE_KEY) || '';
+}
+
+export function saveVoiceName(name) {
+  localStorage.setItem(VOICE_KEY, name);
+}
+
+function resolveVoice() {
+  const saved = getSavedVoiceName();
+  if (!saved) return null;
+  return getEnglishVoices().find(v => v.name === saved) ?? null;
+}
+
 export function speak(word, onEnd) {
   const utterance = new SpeechSynthesisUtterance(word);
   utterance.rate = 0.85;
   utterance.lang = 'en-US';
+  const voice = resolveVoice();
+  if (voice) utterance.voice = voice;
   if (onEnd) utterance.onend = onEnd;
   window.speechSynthesis.cancel();
   clearTimeout(speakTimer);

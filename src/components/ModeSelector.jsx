@@ -1,4 +1,5 @@
 import { isSpeechRecognitionSupported } from '../utils/speech';
+import VoicePicker from './VoicePicker';
 
 export default function ModeSelector({ onSelectMode }) {
   const sttSupported = isSpeechRecognitionSupported();
@@ -6,6 +7,7 @@ export default function ModeSelector({ onSelectMode }) {
   return (
     <div className="mode-selector">
       <h2>Choose a Mode</h2>
+      <VoicePicker />
       <div className="mode-cards">
         <button className="mode-card" onClick={() => onSelectMode('learn')}>
           <h3>Learn</h3>
