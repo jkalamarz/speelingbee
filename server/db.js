@@ -9,9 +9,6 @@ const db = new DatabaseSync(path.join(dataDir, 'speelingbee.db'));
 
 function initialize() {
   db.exec(`
-    ALTER TABLE progress ADD COLUMN IF NOT EXISTS total_count INTEGER NOT NULL DEFAULT 0;
-  `);
-  db.exec(`
     PRAGMA journal_mode = WAL;
     PRAGMA foreign_keys = ON;
     CREATE TABLE IF NOT EXISTS players (
@@ -29,6 +26,9 @@ function initialize() {
       total_count   INTEGER NOT NULL DEFAULT 0,
       UNIQUE(player_id, stage, mode, word)
     );
+  `);
+  db.exec(`
+    ALTER TABLE progress ADD COLUMN IF NOT EXISTS total_count INTEGER NOT NULL DEFAULT 0;
   `);
 }
 
