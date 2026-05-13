@@ -11,21 +11,17 @@ export default function ListenSpeak({ words, player, stage, mode, onChangeMode, 
   const [progressMap, setProgressMap] = useState(new Map());
   const [currentWord, setCurrentWord] = useState(null);
   const [feedback, setFeedback] = useState(null);
+  const [listening, setListening] = useState(false);
+  const [recognizedText, setRecognizedText] = useState('');
+  const [error, setError] = useState('');
   const [completed, setCompleted] = useState(false);
   const [loadingProgress, setLoadingProgress] = useState(true);
-
-  const [confirmedLetters, setConfirmedLetters] = useState([]);
-  const [pendingLetter, setPendingLetter] = useState(null);
-  const [isRecording, setIsRecording] = useState(false);
-  const [error, setError] = useState('');
   const [showMastered, setShowMastered] = useState(false);
 
   const wordRef = useRef(null);
   const poolRef = useRef([]);
   const progressMapRef = useRef(new Map());
   const recognizerRef = useRef(null);
-  const autoAdvanceRef = useRef(false);  // set by Next-while-recording
-  const startRecordingRef = useRef(null); // allows callback to restart recording
 
   useEffect(() => {
     fetchProgress(player.id, stage, mode).then(({ progress }) => {
@@ -51,31 +47,28 @@ export default function ListenSpeak({ words, player, stage, mode, onChangeMode, 
   useEffect(() => { poolRef.current = pool; }, [pool]);
   useEffect(() => { progressMapRef.current = progressMap; }, [progressMap]);
 
-  // Reassigned every render so callbacks always see the latest version via ref
-  startRecordingRef.current = () => {
+  const handleReplay = () => currentWord && speak(currentWord.word);
+  const handleExample = () => currentWord?.sentence && speak(currentWord.sentence);
+
+  const handleRecord = () => {
+    onInteract?.();
     setError('');
-    setPendingLetter(null);
+    setRecognizedText('');
 
     const recognizer = createRecognizer(
-      (results) => {
-        setIsRecording(false);
-        const letter = results[0]?.charAt(0).toLowerCase();
-        if (letter && /[a-z]/.test(letter)) {
-          if (autoAdvanceRef.current) {
-            autoAdvanceRef.current = false;
-            setConfirmedLetters(prev => [...prev, letter]);
-            setTimeout(() => startRecordingRef.current?.(), 50);
-          } else {
-            setPendingLetter(letter);
-          }
-        } else {
-          autoAdvanceRef.current = false;
-          setError('Could not recognize a letter. Please try again.');
-        }
+      async (results) => {
+        setListening(false);
+        const word = wordRef.current?.word;
+        const correct = results.some(r => r === word);
+        setRecognizedText(results[0]);
+        await recordAnswer(player.id, stage, mode, word, correct);
+        const { newPool, newProgressMap } = applyAnswer(poolRef.current, progressMapRef.current, word, correct);
+        setPool(newPool);
+        setProgressMap(newProgressMap);
+        setFeedback(correct ? 'correct' : 'incorrect');
       },
       (err) => {
-        setIsRecording(false);
-        autoAdvanceRef.current = false;
+        setListening(false);
         if (err === 'not-allowed') setError('Microphone access denied.');
         else if (err === 'no-speech') setError('No speech detected. Please try again.');
         else setError(`Recognition error: ${err}`);
@@ -88,52 +81,13 @@ export default function ListenSpeak({ words, player, stage, mode, onChangeMode, 
     }
 
     recognizerRef.current = recognizer;
-    setIsRecording(true);
+    setListening(true);
     recognizer.start();
   };
 
-  const handleReplay = () => currentWord && speak(currentWord.word);
-  const handleExample = () => currentWord?.sentence && speak(currentWord.sentence);
-  const handleRecord = () => { onInteract?.(); startRecordingRef.current?.(); };
-
   const handleStop = () => {
-    autoAdvanceRef.current = false;
     recognizerRef.current?.stop();
-    setIsRecording(false);
-  };
-
-  // Next while recording: stop + auto-confirm + restart
-  const handleNextWhileRecording = () => {
-    autoAdvanceRef.current = true;
-    recognizerRef.current?.stop();
-  };
-
-  // Next in pending state: confirm letter, wait for next Record click
-  const handleNext = () => {
-    if (!pendingLetter) return;
-    setConfirmedLetters(prev => [...prev, pendingLetter]);
-    setPendingLetter(null);
-  };
-
-  const handleBack = () => {
-    if (pendingLetter) {
-      setPendingLetter(null);
-    } else {
-      setConfirmedLetters(prev => prev.slice(0, -1));
-    }
-  };
-
-  const handleDone = async () => {
-    const allLetters = [...confirmedLetters, ...(pendingLetter ? [pendingLetter] : [])];
-    if (!allLetters.length) return;
-    const typed = allLetters.join('');
-    const word = wordRef.current?.word;
-    const correct = typed === word;
-    await recordAnswer(player.id, stage, mode, word, correct);
-    const { newPool, newProgressMap } = applyAnswer(poolRef.current, progressMapRef.current, word, correct);
-    setPool(newPool);
-    setProgressMap(newProgressMap);
-    setFeedback(correct ? 'correct' : 'incorrect');
+    setListening(false);
   };
 
   const nextWord = () => {
@@ -142,11 +96,9 @@ export default function ListenSpeak({ words, player, stage, mode, onChangeMode, 
     wordRef.current = entry;
     setCurrentWord(entry);
     setFeedback(null);
-    setConfirmedLetters([]);
-    setPendingLetter(null);
-    setIsRecording(false);
-    autoAdvanceRef.current = false;
+    setRecognizedText('');
     setError('');
+    setListening(false);
     speak(entry.word);
   };
 
@@ -164,8 +116,6 @@ export default function ListenSpeak({ words, player, stage, mode, onChangeMode, 
   }
 
   const { mastered, total } = countMastered(words, progressMap);
-  const phase = isRecording ? 'recording' : pendingLetter ? 'pending' : 'ready';
-  const hasLetters = confirmedLetters.length > 0 || pendingLetter;
 
   if (showMastered) {
     return <MasteredWords words={getMasteredWords(words, progressMap)} onClose={() => setShowMastered(false)} />;
@@ -177,54 +127,25 @@ export default function ListenSpeak({ words, player, stage, mode, onChangeMode, 
       <button className="progress-counter" onClick={() => setShowMastered(true)}>
         Words mastered: {mastered}/{total}
       </button>
-      <p className="instruction">Spell the word letter by letter.</p>
+      <p className="instruction">Listen to the word and say it back.</p>
       <div className="audio-btns">
         <button className="btn replay-btn" onClick={handleReplay}>Replay</button>
         {currentWord?.sentence && (
           <button className="btn example-btn" onClick={handleExample}>Hear Example</button>
         )}
       </div>
-
       {!feedback && (
-        <>
-          <div className="letter-input">
-            {confirmedLetters.map((ch, i) => (
-              <span key={i} className="letter-cell">{ch}</span>
-            ))}
-            {pendingLetter
-              ? <span className="letter-cell letter-cell-pending">{pendingLetter}</span>
-              : <span className={`letter-cell letter-cell-cursor${isRecording ? ' letter-cell-recording' : ''}`}>
-                  {isRecording ? '…' : '_'}
-                </span>
-            }
-          </div>
-
-          <div className="spell-controls">
-            {phase === 'recording' && (
-              <>
-                <button className="btn stop-btn" onClick={handleStop}>Stop</button>
-                <button className="btn" onClick={handleNextWhileRecording}>Next</button>
-                <span className="listening-indicator">Listening…</span>
-              </>
-            )}
-            {phase !== 'recording' && (
-              <button className="btn record-btn" onClick={handleRecord}>Record</button>
-            )}
-            {phase === 'pending' && (
-              <button className="btn" onClick={handleNext}>Next</button>
-            )}
-            {hasLetters && phase !== 'recording' && (
-              <button className="btn spell-back-btn" onClick={handleBack}>Back</button>
-            )}
-            {hasLetters && phase !== 'recording' && (
-              <button className="btn done-btn" onClick={handleDone}>Done</button>
-            )}
-          </div>
-
-          {error && <p className="error-text">{error}</p>}
-        </>
+        <div className="record-area">
+          {!listening ? (
+            <button className="btn record-btn" onClick={handleRecord}>Record</button>
+          ) : (
+            <button className="btn stop-btn" onClick={handleStop}>Stop</button>
+          )}
+          {listening && <p className="listening-indicator">Listening...</p>}
+        </div>
       )}
-
+      {recognizedText && <p className="recognized">You said: &quot;{recognizedText}&quot;</p>}
+      {error && <p className="error-text">{error}</p>}
       <Feedback feedback={feedback} correctWord={currentWord?.word} onNext={nextWord} />
     </div>
   );
