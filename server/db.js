@@ -27,9 +27,10 @@ function initialize() {
       UNIQUE(player_id, stage, mode, word)
     );
   `);
-  db.exec(`
-    ALTER TABLE progress ADD COLUMN IF NOT EXISTS total_count INTEGER NOT NULL DEFAULT 0;
-  `);
+  const cols = db.prepare('PRAGMA table_info(progress)').all();
+  if (!cols.some(c => c.name === 'total_count')) {
+    db.exec('ALTER TABLE progress ADD COLUMN total_count INTEGER NOT NULL DEFAULT 0');
+  }
 }
 
 function getAllPlayers() {
