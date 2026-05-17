@@ -1,4 +1,54 @@
 stage	word	pronounciation	meaning	example sentence
+Stage 0: Grade 1	cat	 	a small furry animal kept as a pet	The cat sat on the mat.
+Stage 0: Grade 1	dog	 	a common pet that barks	My dog likes to play fetch.
+Stage 0: Grade 1	sun	 	the star that lights and warms our day	The sun is bright and warm today.
+Stage 0: Grade 1	run	 	move quickly on your feet	I like to run in the park.
+Stage 0: Grade 1	big	 	large in size	The elephant is very big.
+Stage 0: Grade 1	red	 	the color of fire	She wore a red dress.
+Stage 0: Grade 1	blue	 	the color of the sky	The sky is blue and clear.
+Stage 0: Grade 1	hat	 	a covering worn on the head	He put on his hat before going out.
+Stage 0: Grade 1	cup	 	a small container for drinking	Please fill my cup with water.
+Stage 0: Grade 1	bed	 	furniture you sleep on	It is time to go to bed.
+Stage 0: Grade 1	sit	 	rest on a seat	Please sit down in your chair.
+Stage 0: Grade 1	hop	 	jump lightly, especially on one foot	The rabbit can hop very fast.
+Stage 0: Grade 1	mud	 	wet, soft dirt	We played in the mud after the rain.
+Stage 0: Grade 1	pig	 	a farm animal with a curly tail	The pig rolled in the mud.
+Stage 0: Grade 1	bug	 	a small insect	A tiny bug crawled on the leaf.
+Stage 0: Grade 1	cut	 	divide with something sharp	Please cut the paper in half.
+Stage 0: Grade 1	hot	 	very warm in temperature	The soup is too hot to eat yet.
+Stage 0: Grade 1	pet	 	a tame animal kept at home	My pet goldfish lives in a bowl.
+Stage 0: Grade 1	nap	 	a short sleep during the day	The baby takes a nap every afternoon.
+Stage 0: Grade 1	van	 	a large enclosed vehicle	We all fit in the van.
+Stage 0: Grade 1	fish	 	an animal that lives in water and has fins	We saw a big fish in the pond.
+Stage 0: Grade 1	frog	 	a small jumping animal that lives near water	The frog jumped into the pond.
+Stage 0: Grade 1	jump	 	push up off the ground with your feet	Can you jump over the puddle?
+Stage 0: Grade 1	play	 	have fun or join a game	Let us play outside after school.
+Stage 0: Grade 1	stop	 	no longer move or continue	Stop at the red light.
+Stage 0: Grade 1	help	 	make things easier for someone	Can you help me carry this box?
+Stage 0: Grade 1	look	 	use your eyes to see	Look both ways before you cross the street.
+Stage 0: Grade 1	good	 	right or of high quality	You did a good job today.
+Stage 0: Grade 1	come	 	move toward a place or person	Come here and sit with me.
+Stage 0: Grade 1	said	 	spoke words out loud	She said hello to her friend.
+Stage 0: Grade 1	time	 	the passing of minutes and hours	What time does school start?
+Stage 0: Grade 1	day	 	a period of twenty-four hours	Today is a sunny day.
+Stage 0: Grade 1	home	 	the place where you live	I walk home after school.
+Stage 0: Grade 1	hand	 	the part at the end of your arm	Raise your hand if you know the answer.
+Stage 0: Grade 1	tree	 	a tall plant with a trunk and leaves	We sat under the big tree.
+Stage 0: Grade 1	bird	 	an animal with wings and feathers	A little bird sang in the tree.
+Stage 0: Grade 1	rain	 	water that falls from clouds	We need an umbrella in the rain.
+Stage 0: Grade 1	snow	 	frozen water that falls from the sky	Let us build a snowman in the snow.
+Stage 0: Grade 1	milk	 	a white drink that comes from cows	I drink a glass of milk every morning.
+Stage 0: Grade 1	cold	 	low in temperature	It is cold outside today.
+Stage 0: Grade 1	warm	 	comfortably heated	The fire kept us warm.
+Stage 0: Grade 1	name	 	the word you are called by	My name is written on my bag.
+Stage 0: Grade 1	ball	 	a round object used in games	Kick the ball to your friend.
+Stage 0: Grade 1	door	 	a panel you open to go in or out	Please close the door behind you.
+Stage 0: Grade 1	food	 	something you eat to stay alive	We need food and water every day.
+Stage 0: Grade 1	farm	 	land where animals and crops are raised	We visited a farm and fed the chickens.
+Stage 0: Grade 1	glad	 	feeling happy or pleased	I am glad you came to my party.
+Stage 0: Grade 1	best	 	better than all others	You are my best friend.
+Stage 0: Grade 1	back	 	the rear side; to return to a place	Put the book back on the shelf.
+Stage 0: Grade 1	give	 	hand something to someone	Give me a hug before you go.
 Stage 1	Happen	 	take place, occur	Did anything exciting happen over the weekend?
 Stage 1	Wait	 	stay until something happens	Please wait here until your name is called.
 Stage 1	Information	 	facts or knowledge	I found some useful information about volcanoes in this book.
