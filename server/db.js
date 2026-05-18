@@ -45,7 +45,7 @@ function createPlayer(name) {
 
 function getProgress(playerId, stage, mode) {
   return db.prepare(
-    'SELECT word, correct_count FROM progress WHERE player_id = ? AND stage = ? AND mode = ?'
+    'SELECT word, correct_count, total_count FROM progress WHERE player_id = ? AND stage = ? AND mode = ?'
   ).all(playerId, stage, mode);
 }
 
