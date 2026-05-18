@@ -88,7 +88,7 @@ export default function FixSpelling({ words, player, stage, mode, onChangeMode, 
   const { mastered, total } = countMastered(words, progressMap);
 
   if (showMastered) {
-    return <MasteredWords words={getMasteredWords(words, progressMap)} statsMap={statsMap} onClose={() => setShowMastered(false)} />;
+    return <MasteredWords words={getMasteredWords(words, progressMap)} allWords={words} statsMap={statsMap} onClose={() => setShowMastered(false)} />;
   }
 
   return (

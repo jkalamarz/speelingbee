@@ -600,6 +600,17 @@ input[type="text"]:focus {
   font-style: italic;
 }
 
+.mastered-section-title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--gold-dark);
+  margin: 1.25rem 0 0.6rem;
+}
+
+.mastered-section-title--pending {
+  color: #888;
+}
+
 .mastered-list {
   list-style: none;
   padding: 0;
