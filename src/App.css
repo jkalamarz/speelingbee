@@ -619,11 +619,22 @@ input[type="text"]:focus {
   border-radius: 0 8px 8px 0;
 }
 
+.mastered-word-row {
+  display: flex;
+  align-items: baseline;
+  gap: 0.4rem;
+}
+
 .mastered-word {
   font-size: 1.1rem;
   font-weight: 700;
   color: var(--gold-dark);
   text-transform: lowercase;
+}
+
+.mastered-stats {
+  font-size: 0.8rem;
+  color: #999;
 }
 
 .mastered-sentence {

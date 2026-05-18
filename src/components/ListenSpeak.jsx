@@ -18,6 +18,7 @@ export default function ListenSpeak({ words, player, stage, mode, onChangeMode, 
   const [loadingProgress, setLoadingProgress] = useState(true);
   const [showMastered, setShowMastered] = useState(false);
   const [retrying, setRetrying] = useState(false);
+  const [statsMap, setStatsMap] = useState(new Map());
 
   const wordRef = useRef(null);
   const poolRef = useRef([]);
@@ -29,6 +30,7 @@ export default function ListenSpeak({ words, player, stage, mode, onChangeMode, 
   useEffect(() => {
     fetchProgress(player.id, stage, mode).then(({ progress }) => {
       const map = new Map(progress.map(p => [p.word, p.correct_count]));
+      setStatsMap(new Map(progress.map(p => [p.word, { correct: p.correct_count, total: p.total_count ?? 0 }])));
       const initialPool = buildPool(words, map);
       progressMapRef.current = map;
       poolRef.current = initialPool;
@@ -151,7 +153,7 @@ export default function ListenSpeak({ words, player, stage, mode, onChangeMode, 
   const { mastered, total } = countMastered(words, progressMap);
 
   if (showMastered) {
-    return <MasteredWords words={getMasteredWords(words, progressMap)} onClose={() => setShowMastered(false)} />;
+    return <MasteredWords words={getMasteredWords(words, progressMap)} statsMap={statsMap} onClose={() => setShowMastered(false)} />;
   }
 
   return (
