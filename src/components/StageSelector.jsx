@@ -15,6 +15,10 @@ export default function StageSelector({ onSelectStage }) {
           <h3>Stage 2</h3>
           <p>More challenging vocabulary</p>
         </button>
+        <button className="mode-card" onClick={() => onSelectStage('Stage 2-updated')}>
+          <h3>Stage 2 (updated)</h3>
+          <p>Expanded Stage 2 with additional challenging words</p>
+        </button>
       </div>
     </div>
   );
