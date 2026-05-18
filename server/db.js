@@ -31,6 +31,8 @@ function initialize() {
   if (!cols.some(c => c.name === 'total_count')) {
     db.exec('ALTER TABLE progress ADD COLUMN total_count INTEGER NOT NULL DEFAULT 0');
   }
+  // Backfill rows recorded before total_count was tracked
+  db.exec('UPDATE progress SET total_count = correct_count WHERE total_count = 0 AND correct_count > 0');
 }
 
 function getAllPlayers() {
